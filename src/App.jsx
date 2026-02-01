@@ -16,12 +16,30 @@ const DEFAULT_TILES = [
 ]
 
 // Generate random grid
-function generateRandomGrid(cols, rows) {
-  return Array(rows).fill(null).map(() =>
-    Array(cols).fill(null).map(() =>
-      Math.floor(Math.random() * TILE_COUNT)
-    )
-  )
+function generateRandomGrid(cols, rows, noAdjacentDuplicates = false) {
+  const grid = []
+  for (let r = 0; r < rows; r++) {
+    const row = []
+    for (let c = 0; c < cols; c++) {
+      if (noAdjacentDuplicates) {
+        // Get neighbors to exclude
+        const excluded = new Set()
+        if (r > 0) excluded.add(grid[r - 1][c]) // top
+        if (c > 0) excluded.add(row[c - 1]) // left
+
+        // Available tiles (exclude neighbors)
+        const available = []
+        for (let i = 0; i < TILE_COUNT; i++) {
+          if (!excluded.has(i)) available.push(i)
+        }
+        row.push(available[Math.floor(Math.random() * available.length)])
+      } else {
+        row.push(Math.floor(Math.random() * TILE_COUNT))
+      }
+    }
+    grid.push(row)
+  }
+  return grid
 }
 
 function App() {
@@ -46,6 +64,9 @@ function App() {
   // Loading state
   const [isExporting, setIsExporting] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
+
+  // Option: no adjacent duplicates
+  const [noAdjacentDuplicates, setNoAdjacentDuplicates] = useState(false)
 
   // Ref to hidden file inputs
   const fileInputRefs = useRef([])
@@ -75,7 +96,7 @@ function App() {
     setIsGenerating(true)
     // Timeout allows UI to update before heavy operation
     setTimeout(() => {
-      setGrid(generateRandomGrid(cols, rows))
+      setGrid(generateRandomGrid(cols, rows, noAdjacentDuplicates))
       setIsGenerating(false)
     }, 10)
   }
@@ -176,7 +197,24 @@ function App() {
   const handleContextMenu = (e, row, col) => {
     e.preventDefault()
     const newGrid = grid.map(r => [...r])
-    newGrid[row][col] = (grid[row][col] + 1) % TILE_COUNT
+
+    let next = (grid[row][col] + 1) % TILE_COUNT
+
+    if (noAdjacentDuplicates) {
+      // Get neighbors to exclude
+      const excluded = new Set()
+      if (row > 0) excluded.add(grid[row - 1][col]) // top
+      if (row < grid.length - 1) excluded.add(grid[row + 1][col]) // bottom
+      if (col > 0) excluded.add(grid[row][col - 1]) // left
+      if (col < grid[row].length - 1) excluded.add(grid[row][col + 1]) // right
+
+      // Find next valid tile
+      while (excluded.has(next) && next !== grid[row][col]) {
+        next = (next + 1) % TILE_COUNT
+      }
+    }
+
+    newGrid[row][col] = next
     setGrid(newGrid)
   }
 
@@ -270,6 +308,15 @@ function App() {
             {isExporting ? 'Exporting...' : 'Export JPG'}
           </button>
         </div>
+
+        <label className="checkbox-control">
+          <input
+            type="checkbox"
+            checked={noAdjacentDuplicates}
+            onChange={(e) => setNoAdjacentDuplicates(e.target.checked)}
+          />
+          No adjacent duplicates
+        </label>
       </div>
 
       <div className="palette">

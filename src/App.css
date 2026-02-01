@@ -219,3 +219,19 @@ h1 {
   color: #666;
   text-align: center;
 }
+
+/* Checkbox */
+.checkbox-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #aaa;
+  cursor: pointer;
+}
+
+.checkbox-control input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
