@@ -3,7 +3,7 @@
   "productName": "Mozzaico",
   "description": "Tile mosaic generator for architects and interior designers",
   "private": true,
-  "version": "1.1.1",
+  "version": "1.1.2",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
@@ -48,9 +48,17 @@
       "electron/**/*",
       "public/**/*"
     ],
+    "linux": {
+      "target": ["AppImage", "snap"],
+      "category": "Graphics",
+      "icon": "public/icons"
+    },
     "win": {
       "target": "nsis",
-      "icon": "public/icon.ico"
+      "icon": "public/icon.png"
+    },
+    "mac": {
+      "icon": "public/icon.png"
     },
     "nsis": {
       "oneClick": false,

@@ -230,8 +230,8 @@ function App() {
 
   return (
     <div className="app">
-      <div className="controls">
-        <div className="control-row">
+      <div className="sidebar">
+        <div className="controls">
           <div className="control-group">
             <span className="group-label">Tile</span>
             <label className="size-control">
@@ -296,75 +296,74 @@ function App() {
               />
             </label>
           </div>
+
+          <label className="checkbox-control">
+            <input
+              type="checkbox"
+              checked={noAdjacentDuplicates}
+              onChange={(e) => setNoAdjacentDuplicates(e.target.checked)}
+            />
+            No adjacent duplicates
+          </label>
+
+          <div className="buttons">
+            <button className="generate-btn" onClick={handleGenerate} disabled={isGenerating}>
+              {isGenerating ? 'Generating...' : 'Generate'}
+            </button>
+            <button className="export-btn" onClick={handleExport} disabled={isExporting}>
+              {isExporting ? 'Exporting...' : 'Export JPG'}
+            </button>
+          </div>
         </div>
 
-        <div className="buttons">
-          <button className="generate-btn" onClick={handleGenerate} disabled={isGenerating}>
-            {isGenerating ? 'Generating...' : 'Generate'}
-          </button>
-          <button className="export-btn" onClick={handleExport} disabled={isExporting}>
-            {isExporting ? 'Exporting...' : 'Export JPG'}
-          </button>
+        <div className="palette">
+          <p>Click to upload/change tile</p>
+          <div className="palette-tiles">
+            {Array(TILE_COUNT).fill(null).map((_, index) => (
+              <div key={index} className="palette-slot">
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={el => fileInputRefs.current[index] = el}
+                  onChange={(e) => handleImageUpload(index, e)}
+                  style={{ display: 'none' }}
+                />
+                <div
+                  className="palette-tile"
+                  style={getTileStyle(index)}
+                  onClick={() => handlePaletteClick(index)}
+                />
+              </div>
+            ))}
+          </div>
         </div>
-
-        <label className="checkbox-control">
-          <input
-            type="checkbox"
-            checked={noAdjacentDuplicates}
-            onChange={(e) => setNoAdjacentDuplicates(e.target.checked)}
-          />
-          No adjacent duplicates
-        </label>
       </div>
 
-      <div className="palette">
-        <p>Click to upload/change image</p>
-        <div className="palette-tiles">
-          {Array(TILE_COUNT).fill(null).map((_, index) => (
-            <div key={index} className="palette-slot">
-              <input
-                type="file"
-                accept="image/*"
-                ref={el => fileInputRefs.current[index] = el}
-                onChange={(e) => handleImageUpload(index, e)}
-                style={{ display: 'none' }}
-              />
-              <div
-                className="palette-tile"
-                style={getTileStyle(index)}
-                onClick={() => handlePaletteClick(index)}
-              />
-            </div>
-          ))}
+      <div className="preview">
+        <div className="grid-container">
+          <div
+            ref={gridRef}
+            className="grid"
+            style={{
+              gridTemplateColumns: `repeat(${cols}, ${tileWidthCm * 4}px)`,
+              gridTemplateRows: `repeat(${rows}, ${tileHeightCm * 4}px)`,
+              gap: `${groutSizeMm}px`,
+              backgroundColor: groutColor,
+            }}
+          >
+            {grid.map((row, rowIndex) => (
+              row.map((cell, colIndex) => (
+                <div
+                  key={`${rowIndex}-${colIndex}`}
+                  className="cell"
+                  style={getTileStyle(cell)}
+                  onContextMenu={(e) => handleContextMenu(e, rowIndex, colIndex)}
+                />
+              ))
+            ))}
+          </div>
         </div>
-
-      </div>
-
-      <div className="grid-container">
-        <p className="hint">
-          Right-click on cell = change to next pattern
-        </p>
-        <div
-          ref={gridRef}
-          className="grid"
-          style={{
-            gridTemplateColumns: `repeat(${cols}, ${tileWidthCm * 4}px)`,
-            gridTemplateRows: `repeat(${rows}, ${tileHeightCm * 4}px)`,
-            gap: `${groutSizeMm}px`,
-            backgroundColor: groutColor,
-          }}
-        >
-          {grid.map((row, rowIndex) => (
-            row.map((cell, colIndex) => (
-              <div
-                key={`${rowIndex}-${colIndex}`}
-                className="cell"
-                style={getTileStyle(cell)}
-                onContextMenu={(e) => handleContextMenu(e, rowIndex, colIndex)}
-              />
-            ))
-          ))}
-        </div>
+        <p className="hint">Right-click on cell to change pattern</p>
       </div>
     </div>
   )
