@@ -3,7 +3,7 @@
   "productName": "Mozzaico",
   "description": "Tile mosaic generator for architects and interior designers",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
