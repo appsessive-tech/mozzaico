@@ -230,8 +230,6 @@ function App() {
 
   return (
     <div className="app">
-      <h2>Tile Mosaic Generator</h2>
-
       <div className="controls">
         <div className="control-row">
           <div className="control-group">
