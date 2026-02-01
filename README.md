@@ -1,16 +1,41 @@
-# React + Vite
+# Mozzaico
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Tile mosaic generator for architects and interior designers.
 
-Currently, two official plugins are available:
+A simple yet powerful tool to visualize ceramic tile layouts.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## React Compiler
+- Upload custom tile images (up to 8 patterns)
+- Configurable tile size (cm) and grid dimensions
+- Adjustable grout width (mm) and color
+- Random mosaic generation
+- High-resolution JPG export with proportional grout
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Usage
 
-## Expanding the ESLint configuration
+1. Click on tile slots to upload your tile images
+2. Set tile dimensions and grid size
+3. Adjust grout settings
+4. Click "Generate" to create random layout
+5. Right-click any tile to cycle through patterns
+6. Export to JPG when ready
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Development
+
+```bash
+npm install
+npm run dev
+```
+
+## Build
+
+```bash
+npm run build
+```
+
+## Tech Stack
+
+- React + Vite
+- CSS Grid
+- HTML5 Canvas (for export)
