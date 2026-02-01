@@ -3,19 +3,19 @@ import './App.css'
 
 const TILE_COUNT = 8
 
-// Domyślne płytki (wycięte z tiles-source.jpg)
+// Default tiles
 const DEFAULT_TILES = [
-  '/tiles/tile-1.jpg',
-  '/tiles/tile-2.jpg',
-  '/tiles/tile-3.jpg',
-  '/tiles/tile-4.jpg',
-  '/tiles/tile-5.jpg',
-  '/tiles/tile-6.jpg',
-  '/tiles/tile-7.jpg',
-  '/tiles/tile-8.jpg',
+  './tiles/tile-1.jpg',
+  './tiles/tile-2.jpg',
+  './tiles/tile-3.jpg',
+  './tiles/tile-4.jpg',
+  './tiles/tile-5.jpg',
+  './tiles/tile-6.jpg',
+  './tiles/tile-7.jpg',
+  './tiles/tile-8.jpg',
 ]
 
-// Generuj losową siatkę
+// Generate random grid
 function generateRandomGrid(cols, rows) {
   return Array(rows).fill(null).map(() =>
     Array(cols).fill(null).map(() =>
@@ -25,33 +25,33 @@ function generateRandomGrid(cols, rows) {
 }
 
 function App() {
-  // 8 slotów na zdjęcia (null = brak zdjęcia, string = data URL)
+  // 8 image slots (null = no image, string = data URL)
   const [tileImages, setTileImages] = useState(Array(TILE_COUNT).fill(null))
 
-  // Liczba płytek w kolumnie i wierszu
+  // Number of tiles in column and row
   const [cols, setCols] = useState(16)
   const [rows, setRows] = useState(16)
 
-  // Siatka, każda komórka = index płytki (0-7)
+  // Grid, each cell = tile index (0-7)
   const [grid, setGrid] = useState(() => generateRandomGrid(16, 16))
 
-  // Wielkość płytki w centymetrach (szerokość x wysokość)
+  // Tile size in centimeters (width x height)
   const [tileWidthCm, setTileWidthCm] = useState(10)
   const [tileHeightCm, setTileHeightCm] = useState(10)
 
-  // Fuga - rozmiar w mm i kolor
+  // Grout - size in mm and color
   const [groutSizeMm, setGroutSizeMm] = useState(2)
   const [groutColor, setGroutColor] = useState('#808080')
 
-  // Stan ładowania
+  // Loading state
   const [isExporting, setIsExporting] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
 
-  // Ref do ukrytych inputów file
+  // Ref to hidden file inputs
   const fileInputRefs = useRef([])
   const gridRef = useRef(null)
 
-  // Upload zdjęcia dla danego slotu
+  // Upload image for given slot
   const handleImageUpload = (index, e) => {
     const file = e.target.files[0]
     if (!file) return
@@ -65,26 +65,26 @@ function App() {
     reader.readAsDataURL(file)
   }
 
-  // Kliknięcie na slot w palecie = upload
+  // Click on palette slot = upload
   const handlePaletteClick = (index) => {
     fileInputRefs.current[index]?.click()
   }
 
-  // Przycisk: wygeneruj nową mozaikę
+  // Button: generate new mosaic
   const handleGenerate = () => {
     setIsGenerating(true)
-    // Timeout pozwala UI się zaktualizować przed ciężką operacją
+    // Timeout allows UI to update before heavy operation
     setTimeout(() => {
       setGrid(generateRandomGrid(cols, rows))
       setIsGenerating(false)
     }, 10)
   }
 
-  // Eksport do JPG w pełnej rozdzielczości źródłowych obrazków
+  // Export to JPG at full source image resolution
   const handleExport = async () => {
     setIsExporting(true)
 
-    // Załaduj wszystkie obrazki płytek
+    // Load all tile images
     const loadImage = (src) => new Promise((resolve) => {
       const img = new Image()
       img.onload = () => resolve(img)
@@ -95,36 +95,36 @@ function App() {
       img.src = src
     })
 
-    // Pobierz źródła obrazków
+    // Get image sources
     const sources = Array(TILE_COUNT).fill(null).map((_, i) =>
       tileImages[i] || DEFAULT_TILES[i]
     )
 
     const images = await Promise.all(sources.map(loadImage))
 
-    // Sprawdź czy wszystkie się załadowały
+    // Check if all loaded
     const validImages = images.filter(img => img !== null)
     if (validImages.length === 0) {
       setIsExporting(false)
-      alert('Nie udało się załadować obrazków')
+      alert('Failed to load images')
       return
     }
 
-    // Rozmiar pojedynczej płytki (z pierwszego załadowanego obrazka)
+    // Single tile size (from first loaded image)
     let tileW = validImages[0].naturalWidth
     let tileH = validImages[0].naturalHeight
 
-    // Maksymalny rozmiar canvasa (większość przeglądarek obsługuje ~16000px)
+    // Max canvas size (most browsers support ~16000px)
     const MAX_CANVAS_SIZE = 8000
 
-    // Oblicz proporcjonalny rozmiar fugi
-    const groutRatio = (groutSizeMm / 10) / tileWidthCm // fuga w stosunku do szerokości płytki
+    // Calculate proportional grout size (grout relative to tile width)
+    const groutRatio = (groutSizeMm / 10) / tileWidthCm
 
-    // Oblicz potencjalny rozmiar canvasa
+    // Calculate potential canvas size
     let totalWidth = cols * tileW + (cols - 1) * Math.round(tileW * groutRatio)
     let totalHeight = rows * tileH + (rows - 1) * Math.round(tileH * groutRatio)
 
-    // Skaluj w dół jeśli za duży
+    // Scale down if too large
     const scale = Math.min(1, MAX_CANVAS_SIZE / Math.max(totalWidth, totalHeight))
     if (scale < 1) {
       tileW = Math.round(tileW * scale)
@@ -133,17 +133,17 @@ function App() {
 
     const groutPx = Math.round(tileW * groutRatio)
 
-    // Stwórz canvas z fugami
+    // Create canvas with grout
     const canvas = document.createElement('canvas')
     canvas.width = cols * tileW + (cols - 1) * groutPx
     canvas.height = rows * tileH + (rows - 1) * groutPx
     const ctx = canvas.getContext('2d')
 
-    // Wypełnij tłem (kolor fugi)
+    // Fill background (grout color)
     ctx.fillStyle = groutColor
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-    // Rysuj płytki z przesunięciem o fugę
+    // Draw tiles with grout offset
     for (let rowIndex = 0; rowIndex < grid.length; rowIndex++) {
       for (let colIndex = 0; colIndex < grid[rowIndex].length; colIndex++) {
         const cell = grid[rowIndex][colIndex]
@@ -156,23 +156,23 @@ function App() {
       }
     }
 
-    // Pobierz jako JPG
+    // Download as JPG
     canvas.toBlob((blob) => {
       setIsExporting(false)
       if (!blob) {
-        alert('Nie udało się wygenerować obrazu. Canvas może być za duży.')
+        alert('Failed to generate image. Canvas may be too large.')
         return
       }
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
-      link.download = `mozaika_${cols}x${rows}.jpg`
+      link.download = `mosaic_${cols}x${rows}.jpg`
       link.href = url
       link.click()
       URL.revokeObjectURL(url)
     }, 'image/jpeg', 0.95)
   }
 
-  // Prawy klik na komórkę - cyklicznie zmień na następny wzór
+  // Right click on cell - cycle to next pattern
   const handleContextMenu = (e, row, col) => {
     e.preventDefault()
     const newGrid = grid.map(r => [...r])
@@ -180,7 +180,7 @@ function App() {
     setGrid(newGrid)
   }
 
-  // Styl dla płytki (obrazek)
+  // Style for tile (image)
   const getTileStyle = (index) => {
     const src = tileImages[index] || DEFAULT_TILES[index]
     return {
@@ -192,12 +192,12 @@ function App() {
 
   return (
     <div className="app">
-      <h2>Generator mozaiki płytek</h2>
+      <h2>Tile Mosaic Generator</h2>
 
       <div className="controls">
         <div className="control-row">
           <div className="control-group">
-            <span className="group-label">Płytka</span>
+            <span className="group-label">Tile</span>
             <label className="size-control">
               <input
                 type="number"
@@ -221,7 +221,7 @@ function App() {
           </div>
 
           <div className="control-group">
-            <span className="group-label">Siatka</span>
+            <span className="group-label">Grid</span>
             <label className="size-control">
               <input
                 type="number"
@@ -242,7 +242,7 @@ function App() {
           </div>
 
           <div className="control-group">
-            <span className="group-label">Fuga</span>
+            <span className="group-label">Grout</span>
             <label className="size-control">
               <input
                 type="number"
@@ -264,16 +264,16 @@ function App() {
 
         <div className="buttons">
           <button className="generate-btn" onClick={handleGenerate} disabled={isGenerating}>
-            {isGenerating ? 'Generuję...' : 'Generuj'}
+            {isGenerating ? 'Generating...' : 'Generate'}
           </button>
           <button className="export-btn" onClick={handleExport} disabled={isExporting}>
-            {isExporting ? 'Eksportuję...' : 'Eksportuj JPG'}
+            {isExporting ? 'Exporting...' : 'Export JPG'}
           </button>
         </div>
       </div>
 
       <div className="palette">
-        <p>Kliknij aby wgrać/zmienić zdjęcie</p>
+        <p>Click to upload/change image</p>
         <div className="palette-tiles">
           {Array(TILE_COUNT).fill(null).map((_, index) => (
             <div key={index} className="palette-slot">
@@ -292,13 +292,13 @@ function App() {
             </div>
           ))}
         </div>
-        
+
       </div>
 
       <div className="grid-container">
-              <p className="hint">
-        Prawy klik na komórkę = zmień na następny wzór
-      </p>
+        <p className="hint">
+          Right-click on cell = change to next pattern
+        </p>
         <div
           ref={gridRef}
           className="grid"
